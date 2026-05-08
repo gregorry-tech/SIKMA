@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -29,7 +30,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
     const timestamp = Date.now();
     const safeFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '');
-    const filePath = `${user.id}/${params.id}/${timestamp}-${safeFileName}`;
+    const filePath = `${user.id}/${id}/${timestamp}-${safeFileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from('skripsi-docs')
@@ -41,13 +42,13 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const { data: consultation } = await supabase
         .from('consultations')
         .select('booking_id')
-        .eq('id', params.id)
+        .eq('id', id)
         .single();
 
     const { data: document, error: dbError } = await supabase
       .from('documents')
       .insert({
-        consultation_id: params.id,
+        consultation_id: id,
         booking_id: consultation?.booking_id,
         uploader_id: user.id,
         file_name: file.name,
@@ -68,6 +69,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
     // FIXED: SDK returns signedUrl property (lowercase)
     const signedUrl = urlData?.signedUrl ?? null;
+    return NextResponse.json({ data: { ...document, signed_url: signedUrl } });
 
   } catch (error: any) {
     console.error("Upload error:", error);

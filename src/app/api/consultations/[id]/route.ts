@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -19,7 +20,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         ),
         documents(*)
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -31,7 +32,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -48,7 +50,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const { data: consultation } = await supabase
       .from('consultations')
       .select('booking_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
     
     if (!consultation) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -66,7 +68,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const { data: updatedConsultation, error } = await supabase
       .from('consultations')
       .update(body) // notes, next_agenda, etc
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 

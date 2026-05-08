@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendBookingNotification } from '@/lib/notifications';
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -20,7 +21,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         status: 'approved',
         approved_at: new Date().toISOString()
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('dosen_id', user.id) // Ensure security
       .select()
       .single();

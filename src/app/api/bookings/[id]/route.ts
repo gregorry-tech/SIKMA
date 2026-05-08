@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendBookingNotification } from '@/lib/notifications';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -19,7 +20,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         schedule:dosen_schedules(*),
         consultation:consultations(*)
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -39,7 +40,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -75,7 +77,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const { data: updatedBooking, error } = await supabase
       .from('bookings')
       .update(updates)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
@@ -94,7 +96,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -102,7 +105,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
   try {
     // FIXED: Only mahasiswa (owner) can cancel pending bookings, or admin/kajur can force-delete
-    const { data: booking } = await supabase.from('bookings').select('*').eq('id', params.id).single();
+    const { data: booking } = await supabase.from('bookings').select('*').eq('id', id).single();
     if (!booking) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
@@ -117,7 +120,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { error } = await supabase.from('bookings').delete().eq('id', params.id);
+    const { error } = await supabase.from('bookings').delete().eq('id', id);
     if (error) throw error;
     return NextResponse.json({ data: { success: true } });
   } catch (error: any) {

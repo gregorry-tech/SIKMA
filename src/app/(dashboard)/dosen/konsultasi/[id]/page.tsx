@@ -6,11 +6,13 @@ import Button from '@/components/ui/Button';
 import Avatar from '@/components/ui/Avatar';
 import { useToast } from '@/components/ui/Toast';
 
-export default function DetailKonsultasiPage({ params }: { params: { id: string } }) {
+export default function DetailKonsultasiPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
+  const id = resolvedParams.id;
   const router = useRouter();
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('booking_id');
-  const isNew = params.id === 'new';
+  const isNew = id === 'new';
   
   const { showToast } = useToast();
   const [booking, setBooking] = useState<any>(null);
@@ -29,7 +31,7 @@ export default function DetailKonsultasiPage({ params }: { params: { id: string 
           setBooking(json.data);
           // Pre-fill progress if previous consultation exists? For simplicity, default to 0.
         } else {
-          const res = await fetch(`/api/consultations/${params.id}`);
+          const res = await fetch(`/api/consultations/${id}`);
           const json = await res.json();
           setConsultation(json.data);
           setBooking(json.data?.booking);
@@ -43,7 +45,7 @@ export default function DetailKonsultasiPage({ params }: { params: { id: string 
       }
     };
     fetchDetails();
-  }, [params.id, isNew, bookingId]);
+  }, [id, isNew, bookingId]);
 
   const handleSave = async () => {
     setSubmitting(true);
@@ -58,7 +60,7 @@ export default function DetailKonsultasiPage({ params }: { params: { id: string 
         showToast('Catatan bimbingan berhasil disimpan.', 'success');
         router.push('/dosen/konsultasi');
       } else {
-        const res = await fetch(`/api/consultations/${params.id}`, {
+        const res = await fetch(`/api/consultations/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form)
