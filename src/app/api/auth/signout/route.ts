@@ -9,7 +9,7 @@ async function performSignout(request: Request) {
     await supabase.auth.signOut();
   }
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const allCookies = cookieStore.getAll();
   allCookies.forEach(cookie => {
     if (cookie.name.startsWith('sb-') && (cookie.name.endsWith('-auth-token') || cookie.name.endsWith('-auth-token-code-verifier'))) {

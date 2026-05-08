@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disable telemetry
-  telemetry: false,
-  
   // Image optimization
   images: {
     remotePatterns: [
@@ -12,10 +9,6 @@ const nextConfig = {
       },
     ],
   },
-  
-  // Production optimizations
-  compress: true,
-  swcMinify: true,
   
   // Webpack configuration
   webpack: (config, { isServer }) => {
