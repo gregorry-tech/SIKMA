@@ -114,7 +114,7 @@ export async function DELETE(request: Request) {
 
     // Find user by email
     const { data: users } = await adminClient.auth.admin.listUsers();
-    const userToDelete = users?.find((u) => u.email === email);
+    const userToDelete = Array.isArray(users) ? users.find((u) => u.email === email) : null;
 
     if (!userToDelete) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
