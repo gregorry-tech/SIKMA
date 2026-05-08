@@ -50,7 +50,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   try {
     const body = await request.json();
     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-    const { data: booking } = await supabase.from('bookings').select('*').eq('id', params.id).single();
+    const { data: booking } = await supabase.from('bookings').select('*').eq('id', id).single();
 
     if (!booking) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
